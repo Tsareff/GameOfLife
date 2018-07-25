@@ -13,30 +13,24 @@ import {
 import "./index.css";
 
 class SizeForm extends React.Component {
-  sizeChangeHandler = evt => {
+  inputRef = React.createRef();
+
+  submitSize = evt => {
     evt.preventDefault();
-    const value = evt.currentTarget.value.split("x");
-    const rows = value[0];
-    const cols = value[1];
-    this.size = {
-      rows,
-      cols
+    const val = this.inputRef.current.value.split("x");
+    val.map(str => Number(str));
+    const obj = {
+      rows: val[0],
+      cols: val[1]
     };
+    this.props.submitSize(obj);
   };
 
   render() {
     return (
-      <div
-        className={this.props.formSubmitted ? "size-form hide" : "size-form"}
-      >
-        <FieldGroup
-          id="formControlsText"
-          type="text"
-          label="Please enter the size of field"
-          placeholder="20x10"
-          onChange={this.sizeChangeHandler}
-        />
-        <Button type="submit" onClick={() => this.props.submitSize(this.size)}>
+      <div className="size-form">
+        <input ref={this.inputRef} />
+        <Button type="submit" onClick={this.submitSize}>
           Submit
         </Button>
       </div>
@@ -61,6 +55,10 @@ class Box extends React.Component {
 }
 
 class Grid extends React.Component {
+  componentDidMount() {
+    this.props.seed();
+  }
+
   render() {
     const width = this.props.cols * 14;
     const rowsArr = [];
@@ -82,10 +80,7 @@ class Grid extends React.Component {
       }
     }
     return (
-      <div
-        className={this.props.formSubmitted ? "grid" : "grid hide"}
-        style={{ width }}
-      >
+      <div className="grid" style={{ width }}>
         {rowsArr}
       </div>
     );
@@ -98,7 +93,7 @@ class Buttons extends React.Component {
   };
   render() {
     return (
-      <div className={this.props.formSubmitted ? "center" : "center hide"}>
+      <div className="center">
         <ButtonToolbar>
           <button className="btn btn-default" onClick={this.props.playButton}>
             Play
@@ -162,7 +157,7 @@ class Main extends React.Component {
     let gridCopy = arrayClone(this.state.gridFull);
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.cols; j++) {
-        if (Math.floor(Math.random() * 10) === 1) {
+        if (Math.floor(Math.random() * 4) === 1) {
           gridCopy[i][j] = true;
         }
       }
@@ -219,10 +214,21 @@ class Main extends React.Component {
   };
 
   submitSize = ({ rows, cols }) => {
-    this.rows = Number(rows);
-    this.cols = Number(cols);
-    this.setState({
+    cols = Number(cols);
+    rows = Number(rows);
+    this.rows = parseInt(rows);
+    this.cols = parseInt(cols);
+    let newGrid = Array(rows)
+      .fill()
+      .map(() => {
+        return Array(cols).fill(false);
+      });
+    const newState = {
+      gridFull: newGrid,
       formSubmitted: !this.state.formSubmitted
+    };
+    this.setState({
+      ...newState
     });
   };
 
@@ -251,20 +257,10 @@ class Main extends React.Component {
     });
   };
 
-  componentDidMount() {
-    this.seed();
-  }
-
   render() {
-    return (
+    let forReturn = this.state.formSubmitted ? (
       <div>
-        <SizeForm
-          formSubmitted={this.state.formSubmitted}
-          submitSize={this.submitSize}
-        />
-        <h1 className={this.state.formSubmitted ? "" : "hide"}>
-          The Game of Life
-        </h1>
+        <h1>The Game of Life</h1>
         <Buttons
           playButton={this.playButton}
           pauseButton={this.pauseButton}
@@ -273,35 +269,25 @@ class Main extends React.Component {
           clear={this.clear}
           seed={this.seed}
           gridSize={this.gridSize}
-          formSubmitted={this.state.formSubmitted}
         />
         <Grid
           gridFull={this.state.gridFull}
           rows={this.rows}
           cols={this.cols}
           selectBox={this.selectBox}
-          formSubmitted={this.state.formSubmitted}
+          seed={this.seed}
         />
-        <h2 className={this.state.formSubmitted ? "" : "hide"}>
-          Generations: {this.state.generation}
-        </h2>
+        <h2>Generations: {this.state.generation}</h2>
       </div>
+    ) : (
+      <SizeForm submitSize={this.submitSize} />
     );
+    return forReturn;
   }
 }
 
 function arrayClone(arr) {
   return JSON.parse(JSON.stringify(arr));
-}
-
-function FieldGroup({ id, label, help, ...props }) {
-  return (
-    <FormGroup controlId={id}>
-      <ControlLabel>{label}</ControlLabel>
-      <FormControl {...props} />
-      {help && <HelpBlock>{help}</HelpBlock>}
-    </FormGroup>
-  );
 }
 
 ReactDOM.render(<Main />, document.getElementById("root"));
