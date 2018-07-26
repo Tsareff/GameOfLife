@@ -14,6 +14,7 @@ import "./index.css";
 
 class SizeForm extends React.Component {
   inputRef = React.createRef();
+  savedGame = Boolean(JSON.parse(localStorage.getItem("curState")));
 
   submitSize = evt => {
     evt.preventDefault();
@@ -32,6 +33,13 @@ class SizeForm extends React.Component {
         <input ref={this.inputRef} />
         <Button type="submit" onClick={this.submitSize}>
           Submit
+        </Button>
+        <Button
+          className={this.savedGame ? "" : "disabled"}
+          type="submit"
+          onClick={this.props.restoreGame}
+        >
+          Load game
         </Button>
       </div>
     );
@@ -232,6 +240,18 @@ class Main extends React.Component {
     });
   };
 
+  restoreGame = () => {
+    const prevState = JSON.parse(localStorage.getItem("curState"));
+    if (prevState) {
+      this.setState({
+        ...prevState,
+        formSubmitted: !this.state.formSubmitted
+      });
+      this.rows = prevState.rows;
+      this.cols = prevState.cols;
+    }
+  };
+
   play = () => {
     let g = this.state.gridFull;
     let g2 = arrayClone(this.state.gridFull);
@@ -251,10 +271,18 @@ class Main extends React.Component {
         if (!g[i][j] && count === 3) g2[i][j] = true;
       }
     }
-    this.setState({
+    const curGen = {
       gridFull: g2,
       generation: this.state.generation + 1
-    });
+    };
+    this.setState({ ...curGen });
+
+    const forStorage = {
+      ...curGen,
+      rows: this.rows,
+      cols: this.cols
+    };
+    localStorage.setItem("curState", JSON.stringify(forStorage));
   };
 
   render() {
@@ -280,7 +308,7 @@ class Main extends React.Component {
         <h2>Generations: {this.state.generation}</h2>
       </div>
     ) : (
-      <SizeForm submitSize={this.submitSize} />
+      <SizeForm submitSize={this.submitSize} restoreGame={this.restoreGame} />
     );
     return forReturn;
   }
