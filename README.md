@@ -1,2 +1,2 @@
 # GameOfLife
-Game of life on React
+Implementation of Game of life with React + React Hooks + TypeSript
