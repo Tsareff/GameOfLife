@@ -3,6 +3,7 @@ import { Button } from "react-bootstrap";
 import { SizeObject } from "../types";
 import { getSizeObject } from "../utils";
 import { SIZE_OPTIONS } from "../constants";
+import { STORAGE_STATE } from "../App";
 
 type Props = {
   submitSize: (object: SizeObject) => void;
@@ -10,8 +11,10 @@ type Props = {
 };
 
 export const SizeForm: React.FC<Props> = ({ submitSize, restoreGame }) => {
-  //@ts-ignore
-  const savedGame = Boolean(JSON.parse(localStorage.getItem("curState")));
+  const storageData = localStorage.getItem(STORAGE_STATE);
+
+  const parsedStorageState = Boolean(storageData && JSON.parse(storageData));
+
   const [selectValue, setSelectValue] = useState(SIZE_OPTIONS[0]);
 
   const submitSizeHandler = (event: React.FormEvent<HTMLFormElement>) => {
@@ -36,7 +39,7 @@ export const SizeForm: React.FC<Props> = ({ submitSize, restoreGame }) => {
       </form>
 
       <Button
-        className={savedGame ? "" : "disabled"}
+        className={parsedStorageState ? "" : "disabled"}
         type="submit"
         onClick={restoreGame}
       >

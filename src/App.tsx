@@ -5,6 +5,8 @@ import { SizeForm } from "./components/SizeForm";
 import { SizeObject, GridMatrix } from "./types";
 import { arrayClone, fillEmptyGridMatrix } from "./utils";
 
+export const STORAGE_STATE = "savedGame";
+
 type State = {
   generation: number;
   formSubmitted: boolean;
@@ -34,25 +36,26 @@ export class App extends React.Component<{}, State> {
   };
 
   seed = () => {
-    let gridCopy = arrayClone(this.state.gridMatrix);
+    if (!localStorage.getItem(STORAGE_STATE)) {
+      let gridCopy: GridMatrix = arrayClone(this.state.gridMatrix);
 
-    for (let i = 0; i < this.rows; i++) {
-      for (let j = 0; j < this.cols; j++) {
-        if (Math.floor(Math.random() * 4) === 1) {
-          gridCopy[i][j] = true;
-        }
-      }
+      gridCopy.forEach((row, i) => {
+        row.forEach((col, j) => {
+          if (Math.floor(Math.random() * 4) === 1) {
+            row[j] = true;
+          }
+        });
+      });
+
+      this.setState({
+        gridMatrix: gridCopy,
+      });
     }
-
-    this.setState({
-      gridMatrix: gridCopy,
-    });
   };
 
   playButton = () => {
     clearInterval(this.intervalId);
-    //@ts-ignore
-    this.intervalId = setInterval(this.play, this.speed);
+    this.intervalId = window.setInterval(this.play, this.speed);
   };
 
   pauseButton = () => {
@@ -103,22 +106,24 @@ export class App extends React.Component<{}, State> {
   };
 
   restoreGame = () => {
-    //@ts-ignore
-    const prevState = JSON.parse(localStorage.getItem("curState"));
+    const storageState = localStorage.getItem(STORAGE_STATE);
 
-    if (prevState) {
+    const parsedStorageState = storageState && JSON.parse(storageState);
+
+    if (parsedStorageState) {
       this.setState({
-        ...prevState,
+        ...parsedStorageState,
         formSubmitted: !this.state.formSubmitted,
       });
-      this.rows = prevState.rows;
-      this.cols = prevState.cols;
+      this.rows = parsedStorageState.rows;
+      this.cols = parsedStorageState.cols;
     }
   };
 
   play = () => {
     let g = this.state.gridMatrix;
     let g2 = arrayClone(this.state.gridMatrix);
+
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.cols; j++) {
         let count = 0;
@@ -135,19 +140,13 @@ export class App extends React.Component<{}, State> {
         if (!g[i][j] && count === 3) g2[i][j] = true;
       }
     }
+
     const curGen = {
       gridMatrix: g2,
       generation: this.state.generation + 1,
     };
+
     this.setState({ ...curGen });
-
-    const forStorage = {
-      ...curGen,
-      rows: this.rows,
-      cols: this.cols,
-    };
-
-    localStorage.setItem("curState", JSON.stringify(forStorage));
   };
 
   render() {
@@ -167,6 +166,7 @@ export class App extends React.Component<{}, State> {
           gridMatrix={this.state.gridMatrix}
           selectBox={this.selectBox}
           seed={this.seed}
+          generation={this.state.generation}
         />
         <h2>Generations: {this.state.generation}</h2>
       </div>

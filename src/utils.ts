@@ -1,6 +1,6 @@
 import { BoxData, GridMatrix } from "./types";
 
-export const arrayClone = (arr: Array<any>) => {
+export const arrayClone = <T>(arr: Array<T>) => {
   return JSON.parse(JSON.stringify(arr));
 };
 
@@ -31,7 +31,10 @@ export const getSizeObject = (value: string) => {
   };
 };
 
-export const fillEmptyGridMatrix = (rows: number, cols: number) =>
+export const fillEmptyGridMatrix: (rows: number, cols: number) => GridMatrix = (
+  rows,
+  cols,
+) =>
   Array(rows)
     .fill(false)
     .map(() => {
