@@ -8,6 +8,7 @@ type Props = {
   gridMatrix: GridMatrix;
   selectBox: SelectBox;
   generation: number;
+  isNewGame: boolean;
   seed: () => void;
 };
 
@@ -18,9 +19,12 @@ export const Grid: React.FC<Props> = ({
   selectBox,
   seed,
   generation,
+  isNewGame,
 }) => {
   useEffect(() => {
-    seed();
+    if (isNewGame) {
+      seed();
+    }
   }, []);
 
   useEffect(() => {

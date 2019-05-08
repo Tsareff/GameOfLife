@@ -11,6 +11,7 @@ type State = {
   generation: number;
   formSubmitted: boolean;
   gridMatrix: GridMatrix;
+  newGame: boolean;
 };
 
 export class App extends React.Component<{}, State> {
@@ -22,6 +23,7 @@ export class App extends React.Component<{}, State> {
   state = {
     generation: 0,
     formSubmitted: false,
+    newGame: false,
     gridMatrix: fillEmptyGridMatrix(this.rows, this.cols),
   };
 
@@ -36,21 +38,19 @@ export class App extends React.Component<{}, State> {
   };
 
   seed = () => {
-    if (!localStorage.getItem(STORAGE_STATE)) {
-      let gridCopy: GridMatrix = arrayClone(this.state.gridMatrix);
+    let gridCopy: GridMatrix = arrayClone(this.state.gridMatrix);
 
-      gridCopy.forEach((row, i) => {
-        row.forEach((col, j) => {
-          if (Math.floor(Math.random() * 4) === 1) {
-            row[j] = true;
-          }
-        });
+    gridCopy.forEach((row, i) => {
+      row.forEach((col, j) => {
+        if (Math.floor(Math.random() * 4) === 1) {
+          row[j] = true;
+        }
       });
+    });
 
-      this.setState({
-        gridMatrix: gridCopy,
-      });
-    }
+    this.setState({
+      gridMatrix: gridCopy,
+    });
   };
 
   playButton = () => {
@@ -98,6 +98,7 @@ export class App extends React.Component<{}, State> {
     const newState = {
       gridMatrix: newGrid,
       formSubmitted: !this.state.formSubmitted,
+      newGame: !this.state.newGame,
     };
 
     this.setState({
@@ -167,6 +168,7 @@ export class App extends React.Component<{}, State> {
           selectBox={this.selectBox}
           seed={this.seed}
           generation={this.state.generation}
+          isNewGame={this.state.newGame}
         />
         <h2>Generations: {this.state.generation}</h2>
       </div>

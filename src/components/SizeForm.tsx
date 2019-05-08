@@ -35,7 +35,7 @@ export const SizeForm: React.FC<Props> = ({ submitSize, restoreGame }) => {
             <option key={i}>{option}</option>
           ))}
         </select>
-        <button type="submit">Play</button>
+        <button type="submit">New Game</button>
       </form>
 
       <Button
